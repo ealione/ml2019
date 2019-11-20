@@ -104,7 +104,7 @@ class RandomTranslateWithReflect:
         return new_image
 
 
-def zca_whitening_matrix(X):
+def zca_whitening_matrix(x):
     """
     Function to compute ZCA whitening matrix (aka Mahalanobis whitening).
     INPUT:  X: [M x N] matrix.
@@ -122,14 +122,14 @@ def zca_whitening_matrix(X):
     https://stackoverflow.com/questions/57709758/using-transforms-lineartransformation-to-apply-whitening-in-pytorch
     """
     # Covariance matrix [column-wise variables]: Sigma = (X-mu)' * (X-mu) / N
-    sigma = np.cov(X, rowvar=True)  # [M x M]
+    sigma = np.cov(x, rowvar=True)  # [M x M]
     # Singular Value Decomposition. X = U * np.diag(S) * V
-    U, S, V = np.linalg.svd(sigma)
+    u, s, v = np.linalg.svd(sigma)
     # U: [M x M] eigenvectors of sigma.
     # S: [M x 1] eigenvalues of sigma.
     # V: [M x M] transpose of U
     # Whitening constant: prevents division by zero
     epsilon = 1e-5
     # ZCA Whitening matrix: U * Lambda * U'
-    ZCAMatrix = np.dot(U, np.dot(np.diag(1.0 / np.sqrt(S + epsilon)), U.T))  # [M x M]
+    ZCAMatrix = np.dot(u, np.dot(np.diag(1.0 / np.sqrt(s + epsilon)), u.T))  # [M x M]
     return ZCAMatrix
