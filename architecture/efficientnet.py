@@ -1,12 +1,15 @@
-"""EfficientNet in PyTorch.
+'''EfficientNet in PyTorch.
+
 Paper: "EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks".
-"""
+'''
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class Block(nn.Module):
+    '''expand + depthwise + pointwise + squeeze-excitation'''
+
     def __init__(self, in_planes, out_planes, expansion, stride):
         super(Block, self).__init__()
         self.stride = stride
@@ -31,8 +34,8 @@ class Block(nn.Module):
             )
 
         # SE layers
-        self.fc1 = nn.Conv2d(out_planes, out_planes // 16, kernel_size=1)
-        self.fc2 = nn.Conv2d(out_planes // 16, out_planes, kernel_size=1)
+        self.fc1 = nn.Conv2d(out_planes, out_planes//16, kernel_size=1)
+        self.fc2 = nn.Conv2d(out_planes//16, out_planes, kernel_size=1)
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
@@ -60,7 +63,7 @@ class EfficientNet(nn.Module):
     def _make_layers(self, in_planes):
         layers = []
         for expansion, out_planes, num_blocks, stride in self.cfg:
-            strides = [stride] + [1] * (num_blocks - 1)
+            strides = [stride] + [1]*(num_blocks-1)
             for stride in strides:
                 layers.append(Block(in_planes, out_planes, expansion, stride))
                 in_planes = out_planes
@@ -76,10 +79,10 @@ class EfficientNet(nn.Module):
 
 def EfficientNetB0():
     # (expansion, out_planes, num_blocks, stride)
-    cfg = [(1, 16, 1, 2),
-           (6, 24, 2, 1),
-           (6, 40, 2, 2),
-           (6, 80, 3, 2),
+    cfg = [(1,  16, 1, 2),
+           (6,  24, 2, 1),
+           (6,  40, 2, 2),
+           (6,  80, 3, 2),
            (6, 112, 3, 1),
            (6, 192, 4, 2),
            (6, 320, 1, 2)]
@@ -91,5 +94,6 @@ def test():
     x = torch.randn(2, 3, 32, 32)
     y = net(x)
     print(y.shape)
+
 
 # test()

@@ -1,15 +1,12 @@
-import torch
-import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
 
 import torchvision
 import torchvision.transforms as transforms
 
-from models import *
+from architecture import *
 
-from utils import RandomTranslateWithReflect, global_contrast_normalization
+from utils import RandomTranslateWithReflect
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
