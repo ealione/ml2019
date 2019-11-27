@@ -5,14 +5,52 @@ import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+from torch.utils.data import Dataset, DataLoader
 
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+from utils import load_whitened_dataset, RandomTranslateWithReflect
+
+# https://www.kaggle.com/skhadirahmed/pytorch-simple-cnn-cifar-10
+# https://github.com/xternalz/WideResNet-pytorch
+
+epochs = 2
+
+
+class CIFAR10Dataset(Dataset):
+    def __init__(self, directory, train=True, transform=None):
+        self.data, self.labels = load_whitened_dataset(directory, train)
+        self.transform = transform
+
+    def __len__(self):
+        return self.data.shape[0]
+
+    def __getitem__(self, idx):
+        if self.transform:
+            sample = self.transform(self.data[idx])
+        else:
+            sample = self.data[idx]
+        return sample, self.labels[idx]
+
+
+transform_train = transforms.Compose([
+    RandomTranslateWithReflect(4),
+    transforms.RandomCrop(32, padding=4),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    # transforms.Lambda(lambda x: global_contrast_normalization(x, scale='l1')),
+])
+
+transform_test = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+])
+
+# trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
+trainset = CIFAR10Dataset(directory='data/cifar10_gcn_zca_v2.npz', train=True, transform=transform_test)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
 
-testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+# testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
+testset = CIFAR10Dataset(directory='data/cifar10_gcn_zca_v2.npz', train=False, transform=transform_test)
 testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -43,7 +81,7 @@ net = Net()
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-for epoch in range(2):  # loop over the dataset multiple times
+for epoch in range(epochs):  # loop over the dataset multiple times
 
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
@@ -55,6 +93,7 @@ for epoch in range(2):  # loop over the dataset multiple times
 
         # forward + backward + optimize
         outputs = net(inputs)
+
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -65,18 +104,19 @@ for epoch in range(2):  # loop over the dataset multiple times
             print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
             running_loss = 0.0
 
-PATH = 'models/cifar_net.pth'
-torch.save(net.state_dict(), PATH)
-
-dataiter = iter(testloader)
-images, labels = dataiter.next()
-
-net = Net()
-net.load_state_dict(torch.load(PATH))
-
-outputs = net(images)
-
-# _, predicted = torch.max(outputs, 1)
+# Save and load the network
+# PATH = 'models/cifar_net.pth'
+# torch.save(net.state_dict(), PATH)
+#
+# dataiter = iter(testloader)
+# images, labels = dataiter.next()
+#
+# net = Net()
+# net.load_state_dict(torch.load(PATH))
+#
+# outputs = net(images)
+#
+# # _, predicted = torch.max(outputs, 1)
 
 correct = 0
 total = 0

@@ -4,23 +4,6 @@ import numpy as np
 from PIL import Image
 
 
-def _data_array(expected_n, x_data, y_data):
-    array = np.zeros(expected_n, dtype=[
-        ('x', np.float32, (32, 32, 3)),
-        ('y', np.int32, ())  # We will be using -1 for unlabeled
-    ])
-    array['x'] = x_data
-    array['y'] = y_data
-    return array
-
-
-def load_preprocessed_data(path):
-    file_data = np.load(path)
-    train_data = _data_array(50000, file_data['train_x'], file_data['train_y'])
-    test_data = _data_array(10000, file_data['test_x'], file_data['test_y'])
-    return train_data, test_data
-
-
 def global_contrast_normalization(x: torch.tensor, scale='l2'):
     """
     Apply global contrast normalization to tensor, i.e. subtract mean across features (pixels) and normalize by scale,
@@ -133,3 +116,12 @@ def zca_whitening_matrix(x):
     # ZCA Whitening matrix: U * Lambda * U'
     ZCAMatrix = np.dot(u, np.dot(np.diag(1.0 / np.sqrt(s + epsilon)), u.T))  # [M x M]
     return ZCAMatrix
+
+
+def load_whitened_dataset(path, train=True):
+    with np.load(path) as data:
+        if train:
+            x, y = tuple(data[k] for k in ('train_x', 'train_y'))
+        else:
+            x, y = tuple(data[k] for k in ('test_x', 'test_y'))
+        return np.float32(x), np.int64(y)

@@ -86,6 +86,23 @@ def create_zca(imgs, filter_bias=0.1):
     return transform
 
 
+def _data_array(expected_n, x_data, y_data):
+    array = np.zeros(expected_n, dtype=[
+        ('x', np.float32, (32, 32, 3)),
+        ('y', np.int32, ())  # We will be using -1 for unlabeled
+    ])
+    array['x'] = x_data
+    array['y'] = y_data
+    return array
+
+
+def load_preprocessed_data(path):
+    file_data = np.load(path)
+    train_data = _data_array(50000, file_data['train_x'], file_data['train_y'])
+    test_data = _data_array(10000, file_data['test_x'], file_data['test_y'])
+    return train_data, test_data
+
+
 def do():
     train_x_orig, train_y = cifar10_orig_train()
     test_x_orig, test_y = cifar10_orig_test()
