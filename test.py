@@ -12,7 +12,7 @@ from utils import load_whitened_dataset, RandomTranslateWithReflect
 # https://www.kaggle.com/skhadirahmed/pytorch-simple-cnn-cifar-10
 # https://github.com/xternalz/WideResNet-pytorch
 
-epochs = 2
+epochs = 10
 
 
 class CIFAR10Dataset(Dataset):
