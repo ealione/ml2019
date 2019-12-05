@@ -6,14 +6,11 @@ import torchvision.transforms as transforms
 
 from architecture import *
 
-from utils import RandomTranslateWithReflect
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 epochs = 200
 
 transform_train = transforms.Compose([
-    RandomTranslateWithReflect(4),
     transforms.RandomCrop(32, padding=4),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),

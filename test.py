@@ -3,14 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
-import torchvision.transforms as transforms
+from torchvision import transforms
 
 from torch.utils.data import Dataset, DataLoader
 
-from utils import load_whitened_dataset, RandomTranslateWithReflect
+from utils import load_whitened_dataset
 
 # https://www.kaggle.com/skhadirahmed/pytorch-simple-cnn-cifar-10
 # https://github.com/xternalz/WideResNet-pytorch
+# https://merrionltd.com/2019/04/08/transfer-learning-in-pytorch-part-1-how-to-use-dataloaders-and-build-a-fully-connected-class/
 
 epochs = 10
 
@@ -32,25 +33,28 @@ class CIFAR10Dataset(Dataset):
 
 
 transform_train = transforms.Compose([
-    RandomTranslateWithReflect(4),
+    transforms.Resize((224, 224)),
     transforms.RandomCrop(32, padding=4),
     transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
     transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    transforms.Normalize((0.4915, 0.4823, 0.4468), (0.2470, 0.2435, 0.2616)),
+    # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     # transforms.Lambda(lambda x: global_contrast_normalization(x, scale='l1')),
 ])
 
 transform_test = transforms.Compose([
+    transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    transforms.Normalize((0.4915, 0.4823, 0.4468), (0.2470, 0.2435, 0.2616)),
 ])
-# trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
-trainset = CIFAR10Dataset(directory='data/cifar10_gcn_zca_v2.npz', train=True, transform=transform_test)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
+# trainset = CIFAR10Dataset(directory='data/cifar10_gcn_zca_v2.npz', train=True, transform=transform_train)
+trainloader = DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
 
-# testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
-testset = CIFAR10Dataset(directory='data/cifar10_gcn_zca_v2.npz', train=False, transform=transform_test)
-testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
+testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
+# testset = CIFAR10Dataset(directory='data/cifar10_gcn_zca_v2.npz', train=False, transform=transform_test)
+testloader = DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
@@ -73,6 +77,7 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
 
 def run():
     net = Net()
@@ -144,6 +149,7 @@ def run():
 
     for i in range(10):
         print('Accuracy of %5s : %2d %%' % (classes[i], 100 * class_correct[i] / class_total[i]))
+
 
 if __name__ == "__main__":
     # Windows thing
