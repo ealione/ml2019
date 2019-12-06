@@ -210,7 +210,9 @@ if __name__ == "__main__":
     train_dataloader = get_dataloader(preprocessed=True, train=True, transform=transform_train)
     test_dataloader = get_dataloader(preprocessed=True, train=False, transform=transform_test)
 
-    model = simplenet().to(device)
+    # model = simplenet().to(device)
+    model = mobilenetv2(activation='mish').to(device)
+
     criterion = nn.CrossEntropyLoss()
     # optimizer = Adam(model.parameters(), lr=learning_rate)
     # optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=0.005, nesterov=False)
@@ -250,4 +252,4 @@ if __name__ == "__main__":
              'Test accuracy': v_stats['accuracy1'], 'Test top-5 accuracy': v_stats['accuracy5'],
              'Test precision': v_stats['precision'], 'Test recall': v_stats['recall'], 'Best': is_best},
             ignore_index=True)
-    stats.to_csv(f'logs/simplenet.csv')
+    stats.to_csv(f'logs/simplenet.csv', index=False)

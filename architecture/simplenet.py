@@ -3,9 +3,9 @@ import torch.nn.functional as F
 from torch.nn import Parameter
 
 
-class simplenet(nn.Module):
-    def __init__(self, classes=10, simpnet_name='simplenet'):
-        super(simplenet, self).__init__()
+class SimpleNet(nn.Module):
+    def __init__(self, classes=10):
+        super(SimpleNet, self).__init__()
         self.features = self._make_layers()
         self.classifier = nn.Linear(256, classes)
         self.drp = nn.Dropout(0.1)
@@ -119,3 +119,7 @@ class simplenet(nn.Module):
                 nn.init.xavier_uniform_(m.weight.data, gain=nn.init.calculate_gain('relu'))
 
         return model
+
+
+def simplenet(classes=10):
+    return SimpleNet(classes)
