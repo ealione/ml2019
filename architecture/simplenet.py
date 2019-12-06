@@ -1,6 +1,4 @@
-import torch
 import torch.nn as nn
-from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import Parameter
 
@@ -8,8 +6,7 @@ from torch.nn import Parameter
 class simplenet(nn.Module):
     def __init__(self, classes=10, simpnet_name='simplenet'):
         super(simplenet, self).__init__()
-        # print(simpnet_name)
-        self.features = self._make_layers()  # self._make_layers(cfg[simpnet_name])
+        self.features = self._make_layers()
         self.classifier = nn.Linear(256, classes)
         self.drp = nn.Dropout(0.1)
 
@@ -17,9 +14,6 @@ class simplenet(nn.Module):
 
         own_state = self.state_dict()
 
-        # print(own_state.keys())
-        # for name, val in own_state:
-        # print(name)
         for name, param in state_dict.items():
             name = name.replace('module.', '')
             if name not in own_state:
@@ -48,8 +42,8 @@ class simplenet(nn.Module):
         out = self.classifier(out)
         return out
 
-    def _make_layers(self):
-
+    @staticmethod
+    def _make_layers():
         model = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=[3, 3], stride=(1, 1), padding=(1, 1)),
             nn.BatchNorm2d(64, eps=1e-05, momentum=0.05, affine=True),

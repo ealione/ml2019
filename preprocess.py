@@ -15,6 +15,7 @@ import os
 import numpy as np
 from scipy.io import loadmat
 
+# https://github.com/siit-vtt/semi-supervised-learning-pytorch
 
 DIR = os.path.join('data', 'cifar-10-batches-py')
 
